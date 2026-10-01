@@ -1,3 +1,8 @@
+node_modules/
+venv/
+.venv/
+.env
+.next/
 {
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -10,3 +15,4 @@
     "typescriptreact": "html"
   }
 }
+

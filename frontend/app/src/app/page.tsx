@@ -1,11 +1,21 @@
-import React, { useState, useRef } from 'react';
-import { Mic, Square, Loader2, Sparkles, RefreshCw, CheckCircle2, Edit2 } from 'lucide-react';
+'use client';
+
+import { useState, useRef } from 'react';
+import { 
+  Sparkles, 
+  Mic, 
+  Square, 
+  Loader2, 
+  RefreshCw, 
+  CheckCircle2,
+  Zap
+} from 'lucide-react';
 
 interface Flashcard {
   id: string;
-  question: str;
-  answer: string;
   category: string;
+  question: string;
+  answer: string;
 }
 
 interface FlashcardDeck {
@@ -13,7 +23,7 @@ interface FlashcardDeck {
   cards: Flashcard[];
 }
 
-export default function Speak2StudyApp() {
+export default function Home() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,12 +32,10 @@ export default function Speak2StudyApp() {
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<any>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // BACKEND API URL (Environment variable or Render URL)
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // 1. Audio Recording Logic
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -60,11 +68,10 @@ export default function Speak2StudyApp() {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
       setIsRecording(false);
-      clearInterval(timerRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
     }
   };
 
-  // 2. Transmit Raw Audio directly to Python API
   const uploadAudioToBackend = async (audioBlob: Blob) => {
     setIsLoading(true);
     const formData = new FormData();
@@ -86,7 +93,6 @@ export default function Speak2StudyApp() {
     }
   };
 
-  // 3. WINNING HACK: Offline Demo Backup for Wi-Fi Disruption
   const loadMockDemoData = () => {
     setIsLoading(true);
     setTimeout(() => {
@@ -122,92 +128,102 @@ export default function Speak2StudyApp() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#0a0d14] text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30">
+      {/* Background Ambient Glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-900/20 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-blue-900/15 rounded-full blur-[140px]" />
+      </div>
+
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex justify-between items-center">
+      <header className="relative z-10 border-b border-slate-800/60 bg-[#0d111a]/80 backdrop-blur-md px-8 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-indigo-600 rounded-xl">
+          <div className="p-2 bg-gradient-to-tr from-indigo-600 to-blue-500 rounded-xl shadow-lg shadow-indigo-500/20">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-xl tracking-wide bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+          <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-indigo-300 via-blue-200 to-indigo-400 bg-clip-text text-transparent">
             Speak2Study 2.0
           </span>
         </div>
         
-        {/* Hackathon Emergency Demo Mode Switch */}
         <button 
           onClick={loadMockDemoData} 
-          className="text-xs text-slate-400 hover:text-indigo-400 border border-slate-700 px-3 py-1.5 rounded-lg transition"
+          className="flex items-center space-x-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 px-3.5 py-2 rounded-full transition-all cursor-pointer shadow-sm hover:border-slate-600"
         >
-          ⚡ Load Sample Deck (Failsafe)
+          <Zap className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400" />
+          <span>Load Sample Deck (Failsafe)</span>
         </button>
       </header>
 
-      {/* Main Studio Area */}
-      <main className="flex-1 max-w-5xl w-full mx-auto p-6 flex flex-col items-center justify-center">
+      {/* Main Content */}
+      <main className="relative z-10 flex-1 max-w-5xl w-full mx-auto px-6 py-12 flex flex-col items-center justify-center">
         {!deck && !isLoading && (
-          <div className="text-center max-w-xl flex flex-col items-center">
-            <h1 className="text-4xl font-extrabold tracking-tight mb-4 text-slate-50">
+          <div className="text-center max-w-2xl flex flex-col items-center my-auto">
+            <h1 className="text-4xl md:text-5xl font-serif font-normal tracking-tight mb-6 leading-tight text-slate-100">
               Speak Your Notes. <br />
-              <span className="text-indigo-400">Gemini Builds Your Study Deck.</span>
+              <span className="font-sans font-bold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">
+                Gemini Builds Your Study Deck.
+              </span>
             </h1>
-            <p className="text-slate-400 mb-8 text-base">
-              Bypass slow speech-to-text. Record lectures or speak aloud—Gemini 2.5 Native Multimodal directly processes your audio stream into structured study cards.
+            <p className="text-slate-400 mb-10 text-base md:text-lg max-w-xl font-light leading-relaxed">
+              Record lectures or speak aloud—Gemini 2.5 Native Multimodal processes audio directly into study cards.
             </p>
 
-            {/* Recorder Trigger */}
-            <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-col items-center space-y-5">
               {!isRecording ? (
-                <button
-                  onClick={startRecording}
-                  className="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-500 hover:scale-105 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center group"
-                >
-                  <Mic className="w-10 h-10 text-white group-hover:scale-110 transition-transform" />
-                </button>
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-full blur-md opacity-40 group-hover:opacity-75 transition duration-500"></div>
+                  <button
+                    onClick={startRecording}
+                    className="relative w-28 h-28 rounded-full bg-gradient-to-b from-indigo-600 to-indigo-800 border border-indigo-400/30 hover:scale-105 transition-all duration-300 shadow-2xl flex items-center justify-center cursor-pointer"
+                  >
+                    <Mic className="w-10 h-10 text-white drop-shadow-md group-hover:scale-110 transition-transform" />
+                  </button>
+                </div>
               ) : (
                 <button
                   onClick={stopRecording}
-                  className="w-24 h-24 rounded-full bg-red-600 hover:bg-red-500 animate-pulse transition-all shadow-lg shadow-red-500/30 flex items-center justify-center"
+                  className="w-28 h-28 rounded-full bg-red-600/90 hover:bg-red-500 border border-red-400/40 animate-pulse transition-all shadow-2xl shadow-red-500/30 flex items-center justify-center cursor-pointer"
                 >
-                  <Square className="w-8 h-8 text-white" />
+                  <Square className="w-9 h-9 text-white fill-white" />
                 </button>
               )}
 
-              <span className="text-sm font-medium text-slate-400">
-                {isRecording ? `Recording... (${recordingTime}s)` : "Tap microphone to begin"}
+              <span className="text-sm font-medium tracking-wide text-slate-400">
+                {isRecording ? `Recording... (${recordingTime}s)` : "Tap to Begin"}
               </span>
             </div>
           </div>
         )}
 
-        {/* Loading State */}
         {isLoading && (
-          <div className="flex flex-col items-center space-y-4">
-            <Loader2 className="w-12 h-12 text-indigo-400 animate-spin" />
-            <p className="text-slate-300 font-medium">
+          <div className="flex flex-col items-center space-y-6 my-auto text-center">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+              <Loader2 className="w-8 h-8 text-indigo-400 animate-spin absolute inset-0 m-auto" />
+            </div>
+            <p className="text-slate-300 font-medium text-lg">
               Gemini 2.5 analyzing raw audio stream & structuring JSON output...
             </p>
           </div>
         )}
 
-        {/* Render Generated Flashcard Deck */}
         {deck && !isLoading && (
-          <div className="w-full space-y-6">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+          <div className="w-full space-y-8 my-auto">
+            <div className="flex justify-between items-end border-b border-slate-800/80 pb-5">
               <div>
-                <span className="text-xs text-indigo-400 font-semibold tracking-wider uppercase">Generated Study Deck</span>
-                <h2 className="text-2xl font-bold text-slate-100">{deck.topic}</h2>
+                <span className="text-xs text-indigo-400 font-bold tracking-widest uppercase">Generated Study Deck</span>
+                <h2 className="text-3xl font-serif text-slate-100 mt-1">{deck.topic}</h2>
               </div>
               <button
                 onClick={() => setDeck(null)}
-                className="flex items-center space-x-2 text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg transition"
+                className="flex items-center space-x-2 text-xs bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700/60 px-4 py-2.5 rounded-xl transition cursor-pointer"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-3.5 h-3.5" />
                 <span>New Session</span>
               </button>
             </div>
 
-            {/* Flashcard 3D Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {deck.cards.map((card) => {
                 const isFlipped = flippedCards[card.id];
@@ -218,25 +234,25 @@ export default function Speak2StudyApp() {
                     className="h-64 cursor-pointer perspective-1000 group"
                   >
                     <div className={`relative w-full h-full duration-500 transform-style-3d transition-transform ${isFlipped ? 'rotate-y-180' : ''}`}>
-                      {/* CARD FRONT */}
-                      <div className="absolute w-full h-full backface-hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl group-hover:border-indigo-500/50 transition-colors">
+                      {/* Card Front */}
+                      <div className="absolute w-full h-full backface-hidden bg-[#0d111a] border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl group-hover:border-indigo-500/40 transition-all duration-300">
                         <div>
-                          <span className="text-xs bg-indigo-500/10 text-indigo-400 px-2.5 py-1 rounded-full font-medium">
+                          <span className="text-[11px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full font-medium">
                             {card.category}
                           </span>
-                          <h3 className="text-lg font-semibold text-slate-100 mt-4">{card.question}</h3>
+                          <h3 className="text-lg font-medium text-slate-100 mt-5 leading-snug">{card.question}</h3>
                         </div>
                         <p className="text-xs text-slate-500 text-right">Click to reveal answer 🔄</p>
                       </div>
 
-                      {/* CARD BACK */}
-                      <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-indigo-950/80 border border-indigo-700/50 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+                      {/* Card Back */}
+                      <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-indigo-950/40 border border-indigo-500/40 backdrop-blur-md rounded-2xl p-6 flex flex-col justify-between shadow-2xl">
                         <div>
-                          <span className="text-xs text-indigo-300 font-semibold uppercase">Answer</span>
+                          <span className="text-[11px] text-indigo-300 font-bold uppercase tracking-wider">Answer</span>
                           <p className="text-sm text-slate-200 mt-3 leading-relaxed">{card.answer}</p>
                         </div>
-                        <div className="flex justify-between items-center text-xs text-indigo-300">
-                          <span className="flex items-center space-x-1">
+                        <div className="flex justify-between items-center text-xs text-indigo-300/80">
+                          <span className="flex items-center space-x-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                             <span>Verified Format</span>
                           </span>

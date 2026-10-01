@@ -35,11 +35,11 @@ def health_check():
 
 @app.post("/api/process-audio", response_model=FlashcardDeck)
 async def process_audio(file: UploadFile = File(...)):
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    if not GEMINI_API_KEY:
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY is missing in backend environment variables.")
 
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     # Save uploaded browser audio file to temporary storage
     ext = os.path.splitext(file.filename)[1] or ".webm"
